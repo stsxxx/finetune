@@ -22,6 +22,11 @@ Experiments are conducted using NVIDIA A40 GPU with 48GB memory.
 
 ## Getting Started
 
+First, get into the LLaMa-Factory directory
+
+```bash
+cd LLaMA-Factory
+```
 
 Please change the transformers library path and model config file path before running each bash script.
 
@@ -36,11 +41,6 @@ config_file_path="xxxxx"
 
 ## Experiments Workflow
 
-First, get into the LLaMa-Factory directory
-
-```bash
-cd LLaMA-Factory
-```
 
 ## Throughput 
 

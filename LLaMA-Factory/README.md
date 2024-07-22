@@ -36,11 +36,6 @@ config_file_path="xxxxx"
 
 ## Experiments Workflow
 
-First, get into the LLaMa-Factory directory
-
-```bash
-cd LLaMA-Factory
-```
 
 ## Throughput 
 
