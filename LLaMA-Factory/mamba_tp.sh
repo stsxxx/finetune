@@ -2,7 +2,7 @@
 # export HF_HOME=/data6/stilex
 # export TMPDIR=/home/stilex/temp
 # export PATH=/home/stilex/.local/bin:$PATH
-export PATH=../BlackMamba:$PATH
+export PYTHONPATH=$PYTHONPATH:../BlackMamba
 
 # change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
 transformers_path="xxxxx"

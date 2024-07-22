@@ -5,7 +5,7 @@
 
 
 
-export PATH=../BlackMamba:$PATH
+export PYTHONPATH=$PYTHONPATH:../BlackMamba
 
 
 # change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
