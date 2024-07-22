@@ -22,6 +22,11 @@ Experiments are conducted using NVIDIA A40 GPU with 48GB memory.
 
 ## Getting Started
 
+First, download Mixtral and BlackMamba models from huggingface
+
+```bash
+python3 model_download.py
+```
 
 Please change the transformers library path and model config file path before running each bash script.
 

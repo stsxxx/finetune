@@ -28,6 +28,12 @@ First, get into the LLaMa-Factory directory
 cd LLaMA-Factory
 ```
 
+Then download Mixtral and BlackMamba models from huggingface
+
+```bash
+python3 model_download.py
+```
+
 Please change the transformers library path and model config file path before running each bash script.
 
 
