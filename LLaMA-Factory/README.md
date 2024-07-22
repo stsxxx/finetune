@@ -46,10 +46,13 @@ cd LLaMA-Factory
 
 ```bash
 ./mixtral_tp.sh
+python3 throughput.py ./profile_data/mixtral/throughput > mixtral_throughput.txt
 ```
 ```bash
 ./mamba_tp.sh
+python3 throughput.py ./profile_data/blackmamba/throughput > mamba_throughput.txt
 ```
+
 
 ## High-level and layer-level Latency Breakdown and Token Distribution
 
@@ -63,7 +66,7 @@ python3 mamba_latency.py ./profile_data/blackmamba/latency > mamba_latency_break
 ```
 
 
-## Kernel-Level latency breakown, SM and MEM Util
+## Kernel-Level latency breakown, SM and MEM Utilization
 
 ```bash
 ./mixtral_pf.sh

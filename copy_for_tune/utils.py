@@ -67,7 +67,7 @@ def split_dataset(
             # labels_first_element = dataset['labels'][1:5]
             # result_dict = {'input_ids': input_ids_first_element, 'attention_mask': attention_mask_first_element, 'labels': labels_first_element}
             # print(len(result_dict))
-            dataset = dataset.train_test_split(train_size=100, seed=training_args.seed)
+            dataset = dataset.train_test_split(train_size=1000, seed=training_args.seed)
             # print(dataset['train']['input_ids'])
             # if data_args.streaming:
             #     dataset = dataset.shuffle(buffer_size=data_args.buffer_size, seed=training_args.seed)
