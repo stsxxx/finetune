@@ -1,7 +1,6 @@
 # export PATH=/home/stilex/.local/cuda/bin:$PATH
 # export HF_HOME=/data3/llama_model/yuchen
 # export HF_HOME=/data6/stilex
-
 # export TMPDIR=/home/stilex/temp
 # export PATH=/home/stilex/.local/bin:$PATH
 

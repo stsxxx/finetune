@@ -22,7 +22,13 @@ Experiments are conducted using NVIDIA A40 GPU with 48GB memory.
 
 ## Getting Started
 
-First, get into the LLaMa-Factory directory
+First, install all required libraries
+
+```bash
+pip install -r requirements.txt
+```
+
+Get into the LLaMa-Factory directory
 
 ```bash
 cd LLaMA-Factory
