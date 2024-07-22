@@ -3,21 +3,19 @@
 # export TMPDIR=/home/stilex/temp
 export PATH=../BlackMamba:$PATH
 
-# pip install transformers==4.36.2
-# cp -f /home/stilex/copy_for_prof/modeling_mixtral.py /home/stilex/.local/lib/python3.8/site-packages/transformers/models/mixtral
-cp -f ../copy_for_mamba/trainer.py /home/stilex/.local/lib/python3.8/site-packages/transformers
+# change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
+transformers_path="xxxxx"
+# change it to the huggingface hub path where the model config is stored i.e. "/xxxx/hub/models--Zyphra--BlackMamba-2.8B/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
+model_path="xxxxx"
+
+
+cp -f ../copy_for_mamba/trainer.py $transformers_path
 cp -f ../copy_for_mamba/workflow.py ./src/llmtuner/train/sft
 cp -f ../copy_for_mamba_tune/util.py ./src/llmtuner/data
 
-# json_file_path="/data3/llama_model/yuchen/hub/models--mistralai--Mixtral-8x7B-v0.1/snapshots/985aa055896a8f943d4a9f2572e6ea1341823841/config.json"
-# Specify the new value for "num_experts_per_tok"
-# new_value=8  # Change this to the desired value
-
-# Use jq to update the value of "num_experts_per_tok" in the JSON file
-# sed -i.bak "s/\"num_experts_per_tok\":.*/\"num_experts_per_tok\": $new_value,/" "$json_file_path"
 config_file_path="../copy_for_mamba/config.json"
-model_path="/data6/stilex/hub/models--Zyphra--BlackMamba-2.8B/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
-# Specify the new value for "num_experts_per_tok"
+
+# Specify the new value for "topk"
 new_value=2  # Change this to the desired value
 
 sed -i.bak "s/\"topk\":.*/\"topk\": $new_value,/" "$config_file_path"
@@ -25,17 +23,10 @@ sed -i.bak "s/\"topk\":.*/\"topk\": $new_value,/" "$config_file_path"
 
 echo "Updated 'topk' to $new_value in $config_file_path"
 
-cp -f $config_file_path $model_path
-
-# echo "Updated 'num_experts_per_tok' to $new_value in $json_file_path"
-# #  
-# # 
-# /usr/local/cuda-11.8/nsight-compute-2022.3.0/ncu -i /home/stilex/dst/LLaMA-Factory/mixtral1/ncu_gsm8k_sparseb1_flash.ncu-rep > /home/stilex/gsm8k/gsm8k_dense/ncu_b1_flash.txt
-# /usr/local/cuda-11.8/nsight-compute-2022.3.0/ncu --target-processes all --nvtx --nvtx-include "moe ffn/" --devices 0 -f -o ./mixtral1/ncu_gsm8k_sparseb1
-# /usr/local/cuda-11.8/nsight-compute-2022.3.0/ncu -i /home/stilex/dst/LLaMA-Factory/mixtral1/ncu_b3dense.ncu-rep > /home/stilex/gsm8k/gsm8k_sparse/ncu_b3_flash.txt
+cp -f "$config_file_path" "$model_path/"
 
 
-# /usr/local/cuda-11.8/nsight-compute-2022.3.0/ncu --target-processes all --replay-mode application --nvtx --nvtx-include "Backward" --devices 0 -f -o /data6/stilex/ncu_profile/mamba/sparseb3_512_back
+
 json_file_path="../copy_for_mamba/trainer.py"
 # List of batch sizes to iterate over
 batch_sizes=(1 30 84)
@@ -45,7 +36,7 @@ for batch_size in "${batch_sizes[@]}"; do
     sed -i.bak "s/^BATCH_SIZE = [0-9]\+$/BATCH_SIZE = $batch_size/" "$json_file_path"
     sed -i.bak "s/^SEQ_LEN = [0-9]\+$/SEQ_LEN = $seq_len/" "$json_file_path"
 
-    cp -f ../copy_for_mamba/trainer.py /home/stilex/.local/lib/python3.8/site-packages/transformers
+    cp -f ../copy_for_mamba/trainer.py "$transformers_path"
     
     # Run the training command with the updated batch size
     # -c 3000
@@ -86,7 +77,7 @@ sed -i.bak "s/\"topk\":.*/\"topk\": $new_value,/" "$config_file_path"
 
 echo "Updated 'topk' to $new_value in $config_file_path"
 
-cp -f $config_file_path $model_path
+cp -f "$config_file_path" "$model_path/"
 
 
 batch_sizes=(1 30)
@@ -96,7 +87,7 @@ for batch_size in "${batch_sizes[@]}"; do
     sed -i.bak "s/^BATCH_SIZE = [0-9]\+$/BATCH_SIZE = $batch_size/" "$json_file_path"
     sed -i.bak "s/^SEQ_LEN = [0-9]\+$/SEQ_LEN = $seq_len/" "$json_file_path"
 
-    cp -f ../copy_for_mamba/trainer.py /home/stilex/.local/lib/python3.8/site-packages/transformers
+    cp -f ../copy_for_mamba/trainer.py "$transformers_path"
     
     # Run the training command with the updated batch size
     # -c 3000

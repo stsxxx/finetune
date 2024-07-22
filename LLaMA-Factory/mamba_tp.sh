@@ -4,14 +4,18 @@
 # export PATH=/home/stilex/.local/bin:$PATH
 export PATH=../BlackMamba:$PATH
 
-# pip install transformers==4.36.2
-# cp -f /home/stilex/copy_for_prof/modeling_mixtral.py /home/stilex/.local/lib/python3.8/site-packages/transformers/models/mixtral
-cp -f ../copy_for_mamba_tune/trainer.py /home/stilex/.local/lib/python3.8/site-packages/transformers
+# change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
+transformers_path="xxxxx"
+# change it to the huggingface hub path where the model config is stored i.e. "/xxxx/hub/models--Zyphra--BlackMamba-2.8B/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
+model_path="xxxxx"
+
+
+cp -f ../copy_for_mamba_tune/trainer.py $transformers_path
 cp -f ../copy_for_mamba_tune/workflow.py ./src/llmtuner/train/sft
 cp -f ../copy_for_mamba_tune/util.py ./src/llmtuner/data
 
 config_file_path="../copy_for_mamba/config.json"
-model_path="/data6/stilex/hub/models--Zyphra--BlackMamba-2.8B/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
+
 
 # Specify the new value for "num_experts_per_tok"
 new_value=2  # Change this to the desired value
@@ -20,7 +24,7 @@ sed -i.bak "s/\"topk\":.*/\"topk\": $new_value,/" "$config_file_path"
 
 
 echo "Updated 'topk' to $new_value in $config_file_path"
-cp -f $config_file_path $model_path
+cp -f "$config_file_path" "$model_path/"
 
 json_file_path="../copy_for_mamba_tune/trainer.py"
 # List of batch sizes to iterate over
@@ -29,7 +33,7 @@ batch_sizes=(1 2 8)
 for batch_size in "${batch_sizes[@]}"; do
 
 
-    cp -f ../copy_for_mamba_tune/trainer.py /home/stilex/.local/lib/python3.8/site-packages/transformers
+    cp -f ../copy_for_mamba_tune/trainer.py "$transformers_path"
     
     # Run the training command with the updated batch size
     # -c 3000
@@ -66,7 +70,7 @@ batch_sizes=(1 6 20)
 for batch_size in "${batch_sizes[@]}"; do
 
 
-    cp -f ../copy_for_mamba_tune/trainer.py /home/stilex/.local/lib/python3.8/site-packages/transformers
+    cp -f ../copy_for_mamba_tune/trainer.py "$transformers_path"
     
     # Run the training command with the updated batch size
     # -c 3000
@@ -105,7 +109,7 @@ sed -i.bak "s/\"topk\":.*/\"topk\": $new_value,/" "$config_file_path"
 
 echo "Updated 'topk' to $new_value in $config_file_path"
 
-cp -f $config_file_path $model_path
+cp -f "$config_file_path" "$model_path/"
 
 
 batch_sizes=(1 2)
@@ -113,7 +117,7 @@ batch_sizes=(1 2)
 for batch_size in "${batch_sizes[@]}"; do
 
 
-    cp -f ../copy_for_mamba_tune/trainer.py /home/stilex/.local/lib/python3.8/site-packages/transformers
+    cp -f ../copy_for_mamba_tune/trainer.py "$transformers_path"
     
     # Run the training command with the updated batch size
     # -c 3000
@@ -151,7 +155,7 @@ batch_sizes=(1 6)
 for batch_size in "${batch_sizes[@]}"; do
 
 
-    cp -f ../copy_for_mamba_tune/trainer.py /home/stilex/.local/lib/python3.8/site-packages/transformers
+    cp -f ../copy_for_mamba_tune/trainer.py "$transformers_path"
     
     # Run the training command with the updated batch size
     # -c 3000
