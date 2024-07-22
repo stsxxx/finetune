@@ -16,7 +16,7 @@
 - huggingface-hub==0.20.3
 - packaging==23.2
 
-### Hardware Requirement
+## Hardware Requirement
 
 Experiments are conducted using NVIDIA A40 GPU with 48GB memory.
 
