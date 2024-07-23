@@ -28,7 +28,6 @@ rouge_chinese==1.0.3
 safetensors==0.4.3
 setuptools==45.2.0
 sse_starlette==2.1.2
-torch==2.1.0+cu118
 tqdm==4.66.1
 transformers==4.40.0
 trl==0.8.6

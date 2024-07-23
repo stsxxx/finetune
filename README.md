@@ -1,7 +1,8 @@
 ## Software Requirement
 
 - Python 3.8
-- Cuda 11.8
+- CUDA 11.8
+- CUDA toolkit 11.8
 - torch==2.1.0+cu118
 - transformers==4.40.0
 - datasets==2.18.0
@@ -25,6 +26,9 @@ Experiments are conducted using NVIDIA A40 GPU with 48GB memory.
 First, install all required libraries
 
 ```bash
+# install PyTorch 2.1.0 compatible with CUDA 11.8
+pip install pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+# install other dependencies
 pip install -r requirements.txt
 ```
 
@@ -37,6 +41,9 @@ cd LLaMA-Factory
 Then download Mixtral and BlackMamba models from huggingface
 
 ```bash
+#specify where you want to store models
+export HF_HOME="path"
+#download models
 python3 model_download.py
 ```
 
@@ -55,7 +62,7 @@ config_file_path="xxxxx"
 
 
 ## Throughput 
-
+You can reproduce the results for Figure 8 in the paper by running:
 ```bash
 ./mixtral_tp.sh
 python3 throughput.py ./profile_data/mixtral/throughput > mixtral_throughput.txt
@@ -68,6 +75,7 @@ python3 throughput.py ./profile_data/blackmamba/throughput > mamba_throughput.tx
 
 ## High-level and layer-level Latency Breakdown and Token Distribution
 
+You can reproduce the results for Figure 4 and 5 in the paper by running:
 ```bash
 ./mixtral_lt.sh
 python3 mixtral_latency.py ./profile_data/mixtral/latency > mixtral_latency_breakdown.txt
@@ -80,6 +88,7 @@ python3 mamba_latency.py ./profile_data/blackmamba/latency > mamba_latency_break
 
 ## Kernel-Level latency breakown, SM and MEM Utilization
 
+You can reproduce the results for Figure 6, 8 and 9 in the paper by running:
 ```bash
 ./mixtral_pf.sh
 python3 sm_mixtral.py ./profile_data/mixtral/ncu > mixtral_sm.txt
@@ -89,4 +98,18 @@ python3 mem_mixtral.py ./profile_data/mixtral/ncu > mixtral_mem.txt
 ./mamba_pf.sh
 python3 sm_mamba.py ./profile_data/blackmamba/ncu > mamba_sm.txt
 python3 mem_mamba.py ./profile_data/blackmamba/ncu > mamba_mem.txt
+```
+
+## Citation
+
+If this work is helpful, please kindly cite as:
+
+```bibtex
+@inproceedings{xia2024Understanding,
+  title={Understanding The Performance and Estimating The Cost Of LLM Fine-Tuning},
+  author={Yuchen Xia and Jiho Kim and Yuhan Chen and Haojie Ye and Souvik Kundu and Cong "Callie" Hao and Nishil Talati},
+  booktitle={Proceedings of 2024 IEEE International Symposium on Workload Characterization},
+  address={Vancouver, Canada},
+  year={2024},
+}
 ```
