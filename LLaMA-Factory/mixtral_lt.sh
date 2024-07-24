@@ -9,7 +9,7 @@
 
 # change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
 transformers_path="xxxxx"
-# change it to the huggingface hub path where the Mixtral model config is stored i.e. "/xxxx/hub/models--mistralai--Mixtral-8x7B-v0.1/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
+# change it to the huggingface hub path where the Mixtral model config is stored (config json file path)i.e. "/xxxx/hub/models--mistralai--Mixtral-8x7B-v0.1/snapshots/521a77772f0d4052fd9846846471d0d2517739d2/config.json"
 config_file_path="xxxxx"
 
 
