@@ -47,7 +47,7 @@ export HF_HOME="path"
 python3 model_download.py
 ```
 
-Please change the transformers library path and model config file path before running each bash script.
+Please change the transformers library path and model config file path in mamba_lt.sh, mamba_pf.sh, mamba_tp.sh, mixtral_lt.sh, mixtral_pf.sh and mixtral_tp.sh before running each bash script.
 
 
 ```bash
