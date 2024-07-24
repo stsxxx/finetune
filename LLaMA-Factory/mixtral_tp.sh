@@ -6,13 +6,13 @@
 
 # change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
 transformers_path="xxxxx"
-# change it to the huggingface hub path where the model config is stored i.e. "/xxxx/hub/models--mistralai--Mixtral-8x7B-v0.1/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
+# change it to the huggingface hub path where the Mixtral model config is stored i.e. "/xxxx/hub/models--mistralai--Mixtral-8x7B-v0.1/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
 config_file_path="xxxxx"
 
 cp -f ../copy_for_tune/modeling_mixtral.py "$transformers_path/models/mixtral"
 cp -f ../copy_for_tune/trainer.py $transformers_path
 cp -f ../copy_for_tune/workflow.py ./src/llmtuner/train/sft
-cp -f ../copy_for_tune/util.py ./src/llmtuner/data
+cp -f ../copy_for_tune/utils.py ./src/llmtuner/data
 
 
 
@@ -31,7 +31,7 @@ for batch_size in "${batch_sizes[@]}"; do
     cp -f ../copy_for_tune/modeling_mixtral.py "$transformers_path/models/mixtral"
     cp -f ../copy_for_tune/trainer.py $transformers_path
     cp -f ../copy_for_tune/workflow.py ./src/llmtuner/train/sft
-    cp -f ../copy_for_tune/util.py ./src/llmtuner/data  
+    cp -f ../copy_for_tune/utils.py ./src/llmtuner/data  
     CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
         --stage sft \
         --do_train \
@@ -64,7 +64,7 @@ for batch_size in "${batch_sizes[@]}"; do
     cp -f ../copy_for_tune/modeling_mixtral.py "$transformers_path/models/mixtral"
     cp -f ../copy_for_tune/trainer.py $transformers_path
     cp -f ../copy_for_tune/workflow.py ./src/llmtuner/train/sft
-    cp -f ../copy_for_tune/util.py ./src/llmtuner/data  
+    cp -f ../copy_for_tune/utils.py ./src/llmtuner/data  
     CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
         --stage sft \
         --do_train \
@@ -105,7 +105,7 @@ for batch_size in "${batch_sizes[@]}"; do
     cp -f ../copy_for_tune/modeling_mixtral.py "$transformers_path/models/mixtral"
     cp -f ../copy_for_tune/trainer.py $transformers_path
     cp -f ../copy_for_tune/workflow.py ./src/llmtuner/train/sft
-    cp -f ../copy_for_tune/util.py ./src/llmtuner/data  
+    cp -f ../copy_for_tune/utils.py ./src/llmtuner/data  
     CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
         --stage sft \
         --do_train \
@@ -138,7 +138,7 @@ for batch_size in "${batch_sizes[@]}"; do
     cp -f ../copy_for_tune/modeling_mixtral.py "$transformers_path/models/mixtral"
     cp -f ../copy_for_tune/trainer.py $transformers_path
     cp -f ../copy_for_tune/workflow.py ./src/llmtuner/train/sft
-    cp -f ../copy_for_tune/util.py ./src/llmtuner/data  
+    cp -f ../copy_for_tune/utils.py ./src/llmtuner/data  
     CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
         --stage sft \
         --do_train \
