@@ -1860,7 +1860,7 @@ class Trainer:
                 rng_to_sync = True
 
             step = -1
-            # epoch_start = time.time()
+            epoch_start = time.time()
             for step, inputs in enumerate(epoch_iterator):
                 total_batched_samples += 1
 
@@ -1993,8 +1993,8 @@ class Trainer:
 
                 if self.control.should_epoch_stop or self.control.should_training_stop:
                     break
-            # torch.cuda.synchronize()
-            # epoch_end = time.time() - epoch_start
+            torch.cuda.synchronize()
+            epoch_end = time.time() - epoch_start
             print('epoch time:', epoch_end)
 
             if step < 0:
