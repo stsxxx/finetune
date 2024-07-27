@@ -41,6 +41,8 @@ cd LLaMA-Factory
 Then download Mixtral and BlackMamba models from huggingface
 
 ```bash
+#Add Blackmamba directory to your path
+export PYTHONPATH=$PYTHONPATH:../BlackMamba
 #specify where you want to store models
 export HF_HOME="path"
 #download models
@@ -98,6 +100,8 @@ python3 mem_mixtral.py ./profile_data/mixtral/ncu > mixtral_mem.txt
 ./mamba_pf.sh
 python3 sm_mamba.py ./profile_data/blackmamba/ncu > mamba_sm.txt
 python3 mem_mamba.py ./profile_data/blackmamba/ncu > mamba_mem.txt
+python3 sm_mamba_back.py ./profile_data/blackmamba/ncu_back > mamba_sm_backward.txt
+python3 mem_mamba_back.py ./profile_data/blackmamba/ncu_back > mamba_mem_backward.txt
 ```
 
 ## Citation

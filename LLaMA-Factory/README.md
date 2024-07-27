@@ -26,6 +26,8 @@ Experiments are conducted using NVIDIA A40 GPU with 48GB memory.
 First, download Mixtral and BlackMamba models from huggingface
 
 ```bash
+#Add Blackmamba directory to your path
+export PYTHONPATH=$PYTHONPATH:../BlackMamba
 #specify where you want to store models
 export HF_HOME="path"
 #download models
