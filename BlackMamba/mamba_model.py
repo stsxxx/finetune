@@ -141,7 +141,7 @@ class MambaModel(nn.Module, GenerationMixin):
         return logits.contiguous()
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_name = None, checkpoint_name=None, config_name=None, **kwargs):
+    def from_pretrained(cls, pretrained_model_name = None, first_download = False, checkpoint_name=None, config_name=None, **kwargs):
         if pretrained_model_name is not None:
             json_config = load_config_hf(pretrained_model_name)
             loaded = load_state_dict_hf(pretrained_model_name)
@@ -155,21 +155,36 @@ class MambaModel(nn.Module, GenerationMixin):
         else:
             return
         # model.load_state_dict(state_dict)
-
-        config = MambaConfig(
-            num_layers=json_config['num_layers'],
-            hidden_size=json_config['hidden_size'],
-            state_size=json_config['state_size'],
-            conv_dimension=json_config['conv_dimension'],
-            vocab_size=json_config['vocab_size'],
-            expansion_factor=json_config['expansion_factor'],
-            mamba_moe_layers=json_config['mamba_moe_layers'],
-            ffn_hidden_size=json_config['ffn_hidden_size'],
-            bias = json_config['add_bias_linear'],
-            add_bias_linear = json_config['add_bias_linear'],
-            gated_linear_unit = json_config['swiglu'],
-            topk = json_config['topk']
-        )
+        if first_download:
+            print('first time download')
+            config = MambaConfig(
+                num_layers=json_config['num_layers'],
+                hidden_size=json_config['hidden_size'],
+                state_size=json_config['state_size'],
+                conv_dimension=json_config['conv_dimension'],
+                vocab_size=json_config['vocab_size'],
+                expansion_factor=json_config['expansion_factor'],
+                mamba_moe_layers=json_config['mamba_moe_layers'],
+                ffn_hidden_size=json_config['ffn_hidden_size'],
+                bias = json_config['add_bias_linear'],
+                add_bias_linear = json_config['add_bias_linear'],
+                gated_linear_unit = json_config['swiglu']
+            )
+        else:           
+            config = MambaConfig(
+                num_layers=json_config['num_layers'],
+                hidden_size=json_config['hidden_size'],
+                state_size=json_config['state_size'],
+                conv_dimension=json_config['conv_dimension'],
+                vocab_size=json_config['vocab_size'],
+                expansion_factor=json_config['expansion_factor'],
+                mamba_moe_layers=json_config['mamba_moe_layers'],
+                ffn_hidden_size=json_config['ffn_hidden_size'],
+                bias = json_config['add_bias_linear'],
+                add_bias_linear = json_config['add_bias_linear'],
+                gated_linear_unit = json_config['swiglu'],
+                topk = json_config['topk']
+            )
 
         model = MambaModel(config=config, max_sequence_length=json_config['max_sequence_length'], **kwargs)
         # print(model_state_dict)
