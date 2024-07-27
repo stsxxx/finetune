@@ -67,7 +67,7 @@ def split_dataset(
             # labels_first_element = dataset['labels'][1:5]
             # result_dict = {'input_ids': input_ids_first_element, 'attention_mask': attention_mask_first_element, 'labels': labels_first_element}
             # print(len(result_dict))
-            dataset = dataset.train_test_split(train_size=100, seed=training_args.seed)
+            dataset = dataset.train_test_split(train_size=1, seed=training_args.seed)
             # print(dataset['train']['input_ids'])
             # if data_args.streaming:
             #     dataset = dataset.shuffle(buffer_size=data_args.buffer_size, seed=training_args.seed)
@@ -103,7 +103,7 @@ def split_dataset(
             # print('avg:', sum/len(dataset['input_ids']))
             if data_args.streaming:
                 dataset = dataset.shuffle(buffer_size=data_args.buffer_size, seed=training_args.seed)
-            return {"train_dataset":  dataset['train'][0]}
+            return {"train_dataset":  dataset['train']}
     else: # do_eval or do_predict
         val_size = int(data_args.val_size) if data_args.val_size > 1 else data_args.val_size
         dataset = dataset.train_test_split(test_size=val_size, seed=training_args.seed)
