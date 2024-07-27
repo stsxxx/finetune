@@ -154,7 +154,8 @@ from .utils.quantization_config import QuantizationMethod
 
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
 DEFAULT_PROGRESS_CALLBACK = ProgressCallback
-
+BATCH_SIZE = 10
+SEQ_LEN = 128
 if is_in_notebook():
     from .utils.notebook import NotebookProgressCallback
 
@@ -227,8 +228,8 @@ OPTIMIZER_NAME_BIN = "optimizer.bin"
 SCHEDULER_NAME = "scheduler.pt"
 SCALER_NAME = "scaler.pt"
 FSDP_MODEL_NAME = "pytorch_model_fsdp"
-BATCH_SIZE = 20
-SEQ_LEN = 64
+
+
 class Trainer:
     """
     Trainer is a simple but feature-complete training and eval loop for PyTorch, optimized for 🤗 Transformers.
@@ -1851,26 +1852,28 @@ class Trainer:
 
                 if step % args.gradient_accumulation_steps == 0:
                     self.control = self.callback_handler.on_step_begin(args, self.state, self.control)
-                # torch.manual_seed(42)
-                # torch.cuda.manual_seed_all(42)
                 # input_ids_tensor = torch.randint(0, 28000, (BATCH_SIZE, SEQ_LEN), dtype=torch.long).to('cuda')
                 # attention_mask_tensor = torch.randint(0, 2, (BATCH_SIZE, SEQ_LEN)).to('cuda')
                 # labels_tensor = torch.randint(0, 28000, (BATCH_SIZE, SEQ_LEN), dtype=torch.long).to('cuda')
-                # inputs = {
+                # input = {
                 #     'input_ids': input_ids_tensor,
                 #     'attention_mask': attention_mask_tensor,
                 #     'labels': labels_tensor
                 # }
-                # train_step_start = time.time()
-                ts = torch.cuda.nvtx.range_start("Train step")
+                # print(f'input: {input}')
+                # print("Type of input_ids_tensor:", input['input_ids'].dtype)
+                # print("size of input_ids_tensor:", (input['input_ids'].size()))
+                # print(f'input: {inputs}')
+                # print("Type of input_ids_tensor:", inputs['input_ids'].dtype)
+                # print("size of input_ids_tensor:", (inputs['input_ids'].size()))
+                train_step_start = time.time()
+                torch.cuda.nvtx.range_push("Train step")
                 with self.accelerator.accumulate(model):
                     tr_loss_step = self.training_step(model, inputs)
+                torch.cuda.nvtx.range_pop()
                 torch.cuda.synchronize()
-                
-                torch.cuda.nvtx.range_end(ts)
-                #torch.cuda.synchronize()
-                # train_step_end = time.time() - train_step_start
-                # print('train step time:', train_step_end)
+                train_step_end = time.time() - train_step_start
+                print('train step time:', train_step_end)
                 if (
                     args.logging_nan_inf_filter
                     and not is_torch_tpu_available()
@@ -1881,7 +1884,7 @@ class Trainer:
                 else:
                     tr_loss += tr_loss_step
 
-                self.current_flos += float(self.floating_point_ops(inputs))
+                self.current_flos += float(self.floating_point_ops(input))
 
                 is_last_step_and_steps_less_than_grad_acc = (
                     steps_in_epoch <= args.gradient_accumulation_steps and (step + 1) == steps_in_epoch
@@ -1917,11 +1920,11 @@ class Trainer:
                             )
 
                     # Optimizer step
-                    # optim_start = time.time()
+                    optim_start = time.time()
                     self.optimizer.step()
-                    ##torch.cuda.synchronize()
-                    # optim_end = time.time() - optim_start
-                    # print('optimizer iteration time:', optim_end)
+                    torch.cuda.synchronize()
+                    optim_end = time.time() - optim_start
+                    print('optimizer iteration time:', optim_end)
                     optimizer_was_run = not self.accelerator.optimizer_step_was_skipped
                     if optimizer_was_run:
                         # Delay optimizer scheduling until metrics are generated
@@ -1939,7 +1942,7 @@ class Trainer:
 
                 if self.control.should_epoch_stop or self.control.should_training_stop:
                     break
-            # #torch.cuda.synchronize()
+            # torch.cuda.synchronize()
             # epoch_end = time.time() - epoch_start
             # print('epoch time:', epoch_end)
 
@@ -2763,19 +2766,18 @@ class Trainer:
 
         if self.args.n_gpu > 1:
             loss = loss.mean()  # mean() to average on multi-gpu parallel training
-        # backward_start = time.time()
-        edg = torch.cuda.nvtx.range_start("Backward")
+        backward_start = time.time()
+        torch.cuda.nvtx.range_push("Backward")
+
         if self.use_apex:
             with amp.scale_loss(loss, self.optimizer) as scaled_loss:
                 scaled_loss.backward()
         else:
             self.accelerator.backward(loss)
-        # torch.cuda.synchronize()
-        
-        torch.cuda.nvtx.range_end(edg)
-        # torch.cuda.synchronize()
-        # backward_end = time.time() - backward_start
-        # print('backward time:', backward_end)
+        torch.cuda.nvtx.range_pop()
+        torch.cuda.synchronize()
+        backward_end = time.time() - backward_start
+        print('backward time:', backward_end)
         return loss.detach() / self.args.gradient_accumulation_steps
 
     def compute_loss(self, model, inputs, return_outputs=False):
@@ -2788,14 +2790,15 @@ class Trainer:
             labels = inputs.pop("labels")
         else:
             labels = None
-        # forward_start = time.time()
-        forw = torch.cuda.nvtx.range_start("Forward")
+        # print(inputs)
+        forward_start = time.time()
+        torch.cuda.nvtx.range_push("Forward")
         outputs = model(**inputs)
         # print(outputs)
-        torch.cuda.nvtx.range_end(forw)
-        #torch.cuda.synchronize()
-        # forward_end = time.time() - forward_start
-        # print('forward time:', forward_end)
+        torch.cuda.nvtx.range_pop()
+        torch.cuda.synchronize()
+        forward_end = time.time() - forward_start
+        print('forward time:', forward_end)
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.
         if self.args.past_index >= 0:

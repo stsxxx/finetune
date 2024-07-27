@@ -674,8 +674,12 @@ class MixtralBLockSparseTop2MLP(nn.Module):
         self.act_fn = ACT2FN[config.hidden_act]
 
     def forward(self, hidden_states, routing_weights):
+        # torch.cuda.nvtx.range_push("moe w1")
         current_hidden_states = self.act_fn(self.w1(hidden_states)) * self.w3(hidden_states)
+        # torch.cuda.nvtx.range_pop()
+        # torch.cuda.nvtx.range_push("moe w2")
         current_hidden_states = self.w2(current_hidden_states)
+        # torch.cuda.nvtx.range_pop()
         return routing_weights * current_hidden_states
 
 
@@ -711,7 +715,7 @@ class MixtralSparseMoeBlock(nn.Module):
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         """ """
-        moe_mask_start = time.time()
+        # moe_mask_start = time.time()
         torch.cuda.nvtx.range_push("moe router")
         batch_size, sequence_length, hidden_dim = hidden_states.shape
         hidden_states = hidden_states.view(-1, hidden_dim)
@@ -734,13 +738,13 @@ class MixtralSparseMoeBlock(nn.Module):
         expert_mask = torch.nn.functional.one_hot(selected_experts, num_classes=self.num_experts).permute(2, 1, 0)
         torch.cuda.nvtx.range_pop()
 
-        torch.cuda.synchronize()
-        moe_mask_end = time.time() - moe_mask_start
-        print('moe mask calculation time:', moe_mask_end)
+        # torch.cuda.synchronize()
+        # moe_mask_end = time.time() - moe_mask_start
+        # print('moe mask calculation time:', moe_mask_end)
         # Loop over all available experts in the model and perform the computation on each expert
 
-        moe_ffc_start = time.time()
-        torch.cuda.nvtx.range_push("moe ffn")
+        # moe_ffc_start = time.time()
+        # torch.cuda.nvtx.range_push("moe ffn")
 
         for expert_idx in range(self.num_experts):
             expert_layer = self.experts[expert_idx]
@@ -752,7 +756,7 @@ class MixtralSparseMoeBlock(nn.Module):
             # in torch it is faster to index using lists than torch tensors
             top_x_list = top_x.tolist()
             idx_list = idx.tolist()
-            print(f'token num for expert {expert_idx}:', len(top_x_list))
+            # print(f'token num for expert {expert_idx}:', len(top_x_list))
 
 
             # Index the correct hidden states and compute the expert hidden state for
@@ -760,19 +764,20 @@ class MixtralSparseMoeBlock(nn.Module):
             # states by `routing_weights` on the corresponding tokens (top-1 and top-2)
             current_state = hidden_states[None, top_x_list].reshape(-1, hidden_dim)
             # # print('current state:', current_state)
+            # torch.cuda.nvtx.range_push("moe expert layer")
+            
             current_hidden_states = expert_layer(current_state, routing_weights[top_x_list, idx_list, None])
+            # torch.cuda.nvtx.range_pop()
 
             # However `index_add_` only support torch tensors for indexing so we'll use
             # the `top_x` tensor here.
             final_hidden_states.index_add_(0, top_x, current_hidden_states.to(hidden_states.dtype))
-            # print("check")
-        
         final_hidden_states = final_hidden_states.reshape(batch_size, sequence_length, hidden_dim)
-        torch.cuda.nvtx.range_pop()
+        # torch.cuda.nvtx.range_pop()
 
-        torch.cuda.synchronize()
-        moe_ffc_end = time.time() - moe_ffc_start
-        print('moe ffc time:', moe_ffc_end)
+        # torch.cuda.synchronize()
+        # moe_ffc_end = time.time() - moe_ffc_start
+        # print('moe ffc time:', moe_ffc_end)
         return final_hidden_states, router_logits
 
 
@@ -780,7 +785,7 @@ class MixtralDecoderLayer(nn.Module):
     def __init__(self, config: MixtralConfig, layer_idx: int):
         super().__init__()
         self.hidden_size = config.hidden_size
-
+        # print(config._attn_implementation)
         self.self_attn = MISTRAL_ATTENTION_CLASSES[config._attn_implementation](config, layer_idx)
 
         self.block_sparse_moe = MixtralSparseMoeBlock(config)
@@ -818,34 +823,20 @@ class MixtralDecoderLayer(nn.Module):
                 If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding
                 (see `past_key_values`).
         """
-        # max_memory_innorm_start = torch.cuda.memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # torch.cuda.reset_peak_memory_stats(device=None)
-        
-        # print(torch.cuda.max_memory_reserved(device=None))
-        input_norm_start = time.time()
+        # input_norm_start = time.time()
         torch.cuda.nvtx.range_push('input normalzation')
 
         residual = hidden_states
 
         hidden_states = self.input_layernorm(hidden_states)
         torch.cuda.nvtx.range_pop()
-        torch.cuda.synchronize()
-        input_norm_end = time.time() - input_norm_start
-        print('input normlization layer time:', input_norm_end)
-        # peak_memory_innorm_end =  torch.cuda.max_memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # max_memory_innorm_end = torch.cuda.memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # print(f"input normlization used {max_memory_innorm_end - max_memory_innorm_start:.2f} GB")
-        # print(f"peak input normlization used {peak_memory_innorm_end - max_memory_innorm_start:.2f} GB")
-        
-        
-        
-        # max_memory_attention_start = torch.cuda.memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # torch.cuda.reset_peak_memory_stats(device=None)
-        
-        self_attention_start = time.time()
+        # torch.cuda.synchronize()
+        # input_norm_end = time.time() - input_norm_start
+        # print('input normlization layer time:', input_norm_end)
+
+        # self_attention_start = time.time()
         torch.cuda.nvtx.range_push('Attention')
-        
-        # print(f"GPU used {max_memory_attention_start:.2f} GB")
+
         # Self Attention
         hidden_states, self_attn_weights, present_key_value = self.self_attn(
             hidden_states=hidden_states,
@@ -857,49 +848,32 @@ class MixtralDecoderLayer(nn.Module):
         )
         hidden_states = residual + hidden_states
         torch.cuda.nvtx.range_pop()
-        torch.cuda.synchronize()
-        self_attention_end = time.time() - self_attention_start
-        print('self-attention layer time:', self_attention_end)
-        # peak_memory_attention_end =  torch.cuda.max_memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # max_memory_attention_end = torch.cuda.memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # print(f"Attention used {max_memory_attention_end - max_memory_attention_start:.2f} GB")
-        # print(f"peak attention used {peak_memory_attention_end - max_memory_attention_start:.2f} GB")
-        
+        # torch.cuda.synchronize()
+        # self_attention_end = time.time() - self_attention_start
+        # print('self-attention layer time:', self_attention_end)
         # Fully Connected
-        # max_memory_outnorm_start = torch.cuda.memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # torch.cuda.reset_peak_memory_stats(device=None)
-        post_attention_start = time.time()
+        # post_attention_start = time.time()
         torch.cuda.nvtx.range_push('post attention normalzation')
 
         residual = hidden_states
         hidden_states = self.post_attention_layernorm(hidden_states)
         torch.cuda.nvtx.range_pop()
-        torch.cuda.synchronize()
-        post_attention_end = time.time() - post_attention_start
-        print('post attention normlization layer time:', post_attention_end)
-        # max_memory_outnorm_end = torch.cuda.memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # peak_memory_outnorm_end = torch.cuda.max_memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # print(f"post attention normlization used {max_memory_outnorm_end - max_memory_outnorm_start:.2f} GB")
-        # print(f"peak post attention normlization used {peak_memory_outnorm_end - max_memory_outnorm_start:.2f} GB")
+        # torch.cuda.synchronize()
+        # post_attention_end = time.time() - post_attention_start
+        # print('post attention normlization layer time:', post_attention_end)
 
 
-        # max_memory_moe_start = torch.cuda.memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # torch.cuda.reset_peak_memory_stats(device=None)
-        moe_start = time.time()
-        torch.cuda.nvtx.range_push('MOE')
+        # moe_start = time.time()
+        # torch.cuda.nvtx.range_push('MOE')
 
         hidden_states, router_logits = self.block_sparse_moe(hidden_states)
         hidden_states = residual + hidden_states
 
         outputs = (hidden_states,)
-        torch.cuda.nvtx.range_pop()
-        torch.cuda.synchronize()
-        moe_end = time.time() - moe_start
-        print('moe layer time:', moe_end)
-        # max_memory_moe_end = torch.cuda.memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # peak_memory_moe_end = torch.cuda.max_memory_allocated(device=None) /  (1024 * 1024 * 1024)
-        # print(f"peak MOE used {peak_memory_moe_end - max_memory_moe_start:.2f} GB")
-        # print(f"MOE used {max_memory_moe_end - max_memory_moe_start:.2f} GB")
+        # torch.cuda.nvtx.range_pop()
+        # torch.cuda.synchronize()
+        # moe_end = time.time() - moe_start
+        # print('moe layer time:', moe_end)
         if output_attentions:
             outputs += (self_attn_weights,)
 
@@ -1119,9 +1093,6 @@ class MixtralModel(MixtralPreTrainedModel):
 
         if inputs_embeds is None:
             inputs_embeds = self.embed_tokens(input_ids)
-        # print(input_ids)
-            
-        # print(attention_mask)
 
         if attention_mask is not None and self._use_flash_attention_2 and use_cache:
             is_padding_right = attention_mask[:, -1].sum().item() != batch_size
@@ -1131,6 +1102,7 @@ class MixtralModel(MixtralPreTrainedModel):
                     " this may lead to unexpected behaviour for Flash Attention version of Mixtral. Make sure to "
                     " call `tokenizer.padding_side  = 'left'` before tokenizing the input. "
                 )
+
         if self._use_flash_attention_2:
             # 2d mask is passed through the layers
             attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) else None
@@ -1151,7 +1123,7 @@ class MixtralModel(MixtralPreTrainedModel):
         all_self_attns = () if output_attentions else None
         all_router_logits = () if output_router_logits else None
         next_decoder_cache = None
-
+        # print(self.gradient_checkpointing)
         for decoder_layer in self.layers:
             if output_hidden_states:
                 all_hidden_states += (hidden_states,)
@@ -1298,8 +1270,7 @@ class MixtralForCausalLM(MixtralPreTrainedModel):
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-        # print(input_ids)
-        # print(attention_mask)
+
         # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
         outputs = self.model(
             input_ids=input_ids,
@@ -1330,7 +1301,6 @@ class MixtralForCausalLM(MixtralPreTrainedModel):
             # Enable model parallelism
             shift_labels = shift_labels.to(shift_logits.device)
             loss = loss_fct(shift_logits, shift_labels)
-        # print(loss)
 
         aux_loss = None
         if output_router_logits:
@@ -1339,9 +1309,7 @@ class MixtralForCausalLM(MixtralPreTrainedModel):
             )
             if labels is not None:
                 loss += self.router_aux_loss_coef * aux_loss
-        # print(self.router_aux_loss_coef)
-        # print(aux_loss)
-        
+
         if not return_dict:
             output = (logits,) + outputs[1:]
             if output_router_logits:
