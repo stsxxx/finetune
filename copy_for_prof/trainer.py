@@ -227,7 +227,7 @@ OPTIMIZER_NAME_BIN = "optimizer.bin"
 SCHEDULER_NAME = "scheduler.pt"
 SCALER_NAME = "scaler.pt"
 FSDP_MODEL_NAME = "pytorch_model_fsdp"
-BATCH_SIZE = 1
+BATCH_SIZE = 10
 SEQ_LEN = 128
 class Trainer:
     """
@@ -1870,7 +1870,7 @@ class Trainer:
                 torch.cuda.nvtx.range_end(ts)
                 #torch.cuda.synchronize()
                 # train_step_end = time.time() - train_step_start
-                # print('train step time:', train_step_end)
+                print('train step time:', train_step_end)
                 if (
                     args.logging_nan_inf_filter
                     and not is_torch_tpu_available()
@@ -1921,7 +1921,7 @@ class Trainer:
                     self.optimizer.step()
                     ##torch.cuda.synchronize()
                     # optim_end = time.time() - optim_start
-                    # print('optimizer iteration time:', optim_end)
+                    print('optimizer iteration time:', optim_end)
                     optimizer_was_run = not self.accelerator.optimizer_step_was_skipped
                     if optimizer_was_run:
                         # Delay optimizer scheduling until metrics are generated
@@ -1941,7 +1941,7 @@ class Trainer:
                     break
             # #torch.cuda.synchronize()
             # epoch_end = time.time() - epoch_start
-            # print('epoch time:', epoch_end)
+            print('epoch time:', epoch_end)
 
             if step < 0:
                 logger.warning(
@@ -2775,7 +2775,7 @@ class Trainer:
         torch.cuda.nvtx.range_end(edg)
         # torch.cuda.synchronize()
         # backward_end = time.time() - backward_start
-        # print('backward time:', backward_end)
+        print('backward time:', backward_end)
         return loss.detach() / self.args.gradient_accumulation_steps
 
     def compute_loss(self, model, inputs, return_outputs=False):
@@ -2795,7 +2795,7 @@ class Trainer:
         torch.cuda.nvtx.range_end(forw)
         #torch.cuda.synchronize()
         # forward_end = time.time() - forward_start
-        # print('forward time:', forward_end)
+        print('forward time:', forward_end)
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.
         if self.args.past_index >= 0:

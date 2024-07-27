@@ -151,8 +151,8 @@ from .utils import (
 )
 from .utils.quantization_config import QuantizationMethod
 
-BATCH_SIZE = 20
-SEQ_LEN = 512
+BATCH_SIZE = 1
+SEQ_LEN = 128
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
 DEFAULT_PROGRESS_CALLBACK = ProgressCallback
 
@@ -1912,7 +1912,7 @@ class Trainer:
                     'attention_mask': attention_mask_tensor,
                     'labels': labels_tensor
                 }
-                print(f'input: {inputs}')
+                # print(f'input: {inputs}')
                 # print("Type of input_ids_tensor:", inputs['input_ids'].dtype)
                 # print("size of input_ids_tensor:", (inputs['input_ids'].size()))
                 # print(inputs['input_ids'])
@@ -1995,7 +1995,7 @@ class Trainer:
                     break
             # torch.cuda.synchronize()
             # epoch_end = time.time() - epoch_start
-            # print('epoch time:', epoch_end)
+            print('epoch time:', epoch_end)
 
             if step < 0:
                 logger.warning(
