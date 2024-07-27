@@ -1,12 +1,14 @@
 
 export PYTHONPATH=$PYTHONPATH:../BlackMamba
 
+mkdir -p profile_data/blackmamba/throughput
+
 # change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
 transformers_path="xxxxx"
 # change it to the huggingface hub path where the BlackMamba model config is stored (directory path)i.e. "/xxxx/hub/models--Zyphra--BlackMamba-2.8B/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
 model_path="xxxxx"
 
-
+cp -f ../copy_for_tune/pytorch_utils.py $transformers_path
 cp -f ../copy_for_mamba_tune/trainer.py $transformers_path
 cp -f ../copy_for_mamba_tune/workflow.py ./src/llmtuner/train/sft
 cp -f ../copy_for_mamba_tune/utils.py ./src/llmtuner/data
@@ -14,7 +16,7 @@ cp -f ../copy_for_mamba_tune/utils.py ./src/llmtuner/data
 config_file_path="../copy_for_mamba/config.json"
 
 
-# Specify the new value for "num_experts_per_tok"
+# Specify the new value for "topkk"
 new_value=2  # Change this to the desired value
 
 sed -i.bak "s/\"topk\":.*/\"topk\": $new_value}/" "$config_file_path"

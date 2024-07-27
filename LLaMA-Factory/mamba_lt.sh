@@ -1,11 +1,15 @@
 
 export PYTHONPATH=$PYTHONPATH:../BlackMamba
 
+
+mkdir -p profile_data/blackmamba/latency
+
 # change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
 transformers_path="xxxxx"
 # change it to the huggingface hub path where the BlackMamba model config is stored (directory path) i.e. "/xxxx/hub/models--Zyphra--BlackMamba-2.8B/snapshots/521a77772f0d4052fd9846846471d0d2517739d2"
 model_path="xxxxx"
 
+cp -f ../copy_for_tune/pytorch_utils.py $transformers_path
 cp -f ../copy_for_mamba/trainer.py $transformers_path
 cp -f ../copy_for_mamba/workflow.py ./src/llmtuner/train/sft
 cp -f ../copy_for_mamba_tune/utils.py ./src/llmtuner/data

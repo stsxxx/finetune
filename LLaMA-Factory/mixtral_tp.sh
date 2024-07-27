@@ -4,6 +4,8 @@
 # export TMPDIR=/home/stilex/temp
 # export PATH=/home/stilex/.local/bin:$PATH
 
+mkdir -p profile_data/mixtral/throughput
+
 # change it to your transformers library path i.e. /home/xxx/.local/lib/python3.8/site-packages/transformers
 transformers_path="xxxxx"
 # change it to the huggingface hub path where the Mixtral model config is stored (config json file path) i.e. "/xxxx/hub/models--mistralai--Mixtral-8x7B-v0.1/snapshots/521a77772f0d4052fd9846846471d0d2517739d2/config.json"
@@ -11,9 +13,9 @@ config_file_path="xxxxx"
 
 cp -f ../copy_for_tune/modeling_mixtral.py "$transformers_path/models/mixtral"
 cp -f ../copy_for_tune/trainer.py $transformers_path
+cp -f ../copy_for_tune/pytorch_utils.py $transformers_path
 cp -f ../copy_for_tune/workflow.py ./src/llmtuner/train/sft
 cp -f ../copy_for_tune/utils.py ./src/llmtuner/data
-
 
 
 # Specify the new value for "num_experts_per_tok"
