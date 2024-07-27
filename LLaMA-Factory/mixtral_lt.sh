@@ -13,7 +13,7 @@ transformers_path="xxxxx"
 config_file_path="xxxxx"
 
 
-cp -f ../copy_for_prof/modeling_mixtral.py "$transformers_path/models/mixtral"
+cp -f ../copy_for_tune/modeling_mixtral.py "$transformers_path/models/mixtral"
 cp -f ../copy_for_prof/trainer.py $transformers_path
 cp -f ../copy_for_tune/pytorch_utils.py $transformers_path
 cp -f ../copy_for_prof/workflow.py ./src/llmtuner/train/sft

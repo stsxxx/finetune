@@ -227,7 +227,7 @@ OPTIMIZER_NAME_BIN = "optimizer.bin"
 SCHEDULER_NAME = "scheduler.pt"
 SCALER_NAME = "scaler.pt"
 FSDP_MODEL_NAME = "pytorch_model_fsdp"
-BATCH_SIZE = 10
+BATCH_SIZE = 1
 SEQ_LEN = 128
 class Trainer:
     """
@@ -1819,7 +1819,7 @@ class Trainer:
                 rng_to_sync = True
 
             step = -1
-            # epoch_start = time.time()
+            epoch_start = time.time()
             for step, inputs in enumerate(epoch_iterator):
                 total_batched_samples += 1
 
@@ -1861,15 +1861,15 @@ class Trainer:
                     'attention_mask': attention_mask_tensor,
                     'labels': labels_tensor
                 }
-                # train_step_start = time.time()
+                train_step_start = time.time()
                 ts = torch.cuda.nvtx.range_start("Train step")
                 with self.accelerator.accumulate(model):
                     tr_loss_step = self.training_step(model, input)
                 torch.cuda.synchronize()
                 
                 torch.cuda.nvtx.range_end(ts)
-                #torch.cuda.synchronize()
-                # train_step_end = time.time() - train_step_start
+                torch.cuda.synchronize()
+                train_step_end = time.time() - train_step_start
                 print('train step time:', train_step_end)
                 if (
                     args.logging_nan_inf_filter
@@ -1917,10 +1917,10 @@ class Trainer:
                             )
 
                     # Optimizer step
-                    # optim_start = time.time()
+                    optim_start = time.time()
                     self.optimizer.step()
-                    ##torch.cuda.synchronize()
-                    # optim_end = time.time() - optim_start
+                    torch.cuda.synchronize()
+                    optim_end = time.time() - optim_start
                     print('optimizer iteration time:', optim_end)
                     optimizer_was_run = not self.accelerator.optimizer_step_was_skipped
                     if optimizer_was_run:
@@ -1939,8 +1939,8 @@ class Trainer:
 
                 if self.control.should_epoch_stop or self.control.should_training_stop:
                     break
-            # #torch.cuda.synchronize()
-            # epoch_end = time.time() - epoch_start
+            torch.cuda.synchronize()
+            epoch_end = time.time() - epoch_start
             print('epoch time:', epoch_end)
 
             if step < 0:
@@ -2763,7 +2763,7 @@ class Trainer:
 
         if self.args.n_gpu > 1:
             loss = loss.mean()  # mean() to average on multi-gpu parallel training
-        # backward_start = time.time()
+        backward_start = time.time()
         edg = torch.cuda.nvtx.range_start("Backward")
         if self.use_apex:
             with amp.scale_loss(loss, self.optimizer) as scaled_loss:
@@ -2773,8 +2773,8 @@ class Trainer:
         # torch.cuda.synchronize()
         
         torch.cuda.nvtx.range_end(edg)
-        # torch.cuda.synchronize()
-        # backward_end = time.time() - backward_start
+        torch.cuda.synchronize()
+        backward_end = time.time() - backward_start
         print('backward time:', backward_end)
         return loss.detach() / self.args.gradient_accumulation_steps
 
@@ -2788,13 +2788,13 @@ class Trainer:
             labels = inputs.pop("labels")
         else:
             labels = None
-        # forward_start = time.time()
+        forward_start = time.time()
         forw = torch.cuda.nvtx.range_start("Forward")
         outputs = model(**inputs)
         # print(outputs)
         torch.cuda.nvtx.range_end(forw)
-        #torch.cuda.synchronize()
-        # forward_end = time.time() - forward_start
+        torch.cuda.synchronize()
+        forward_end = time.time() - forward_start
         print('forward time:', forward_end)
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.

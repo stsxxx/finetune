@@ -740,7 +740,7 @@ class MixtralSparseMoeBlock(nn.Module):
 
         # torch.cuda.synchronize()
         # moe_mask_end = time.time() - moe_mask_start
-        print('moe mask calculation time:', moe_mask_end)
+        # print('moe mask calculation time:', moe_mask_end)
         # Loop over all available experts in the model and perform the computation on each expert
 
         # moe_ffc_start = time.time()
@@ -756,7 +756,7 @@ class MixtralSparseMoeBlock(nn.Module):
             # in torch it is faster to index using lists than torch tensors
             top_x_list = top_x.tolist()
             idx_list = idx.tolist()
-            print(f'token num for expert {expert_idx}:', len(top_x_list))
+            # print(f'token num for expert {expert_idx}:', len(top_x_list))
 
 
             # Index the correct hidden states and compute the expert hidden state for
@@ -777,7 +777,7 @@ class MixtralSparseMoeBlock(nn.Module):
 
         # torch.cuda.synchronize()
         # moe_ffc_end = time.time() - moe_ffc_start
-        print('moe ffc time:', moe_ffc_end)
+        # print('moe ffc time:', moe_ffc_end)
         return final_hidden_states, router_logits
 
 
@@ -832,7 +832,7 @@ class MixtralDecoderLayer(nn.Module):
         torch.cuda.nvtx.range_pop()
         # torch.cuda.synchronize()
         # input_norm_end = time.time() - input_norm_start
-        print('input normlization layer time:', input_norm_end)
+        # print('input normlization layer time:', input_norm_end)
 
         # self_attention_start = time.time()
         torch.cuda.nvtx.range_push('Attention')
@@ -850,7 +850,7 @@ class MixtralDecoderLayer(nn.Module):
         torch.cuda.nvtx.range_pop()
         # torch.cuda.synchronize()
         # self_attention_end = time.time() - self_attention_start
-        print('self-attention layer time:', self_attention_end)
+        # print('self-attention layer time:', self_attention_end)
         # Fully Connected
         # post_attention_start = time.time()
         torch.cuda.nvtx.range_push('post attention normalzation')
@@ -860,7 +860,7 @@ class MixtralDecoderLayer(nn.Module):
         torch.cuda.nvtx.range_pop()
         # torch.cuda.synchronize()
         # post_attention_end = time.time() - post_attention_start
-        print('post attention normlization layer time:', post_attention_end)
+        # print('post attention normlization layer time:', post_attention_end)
 
 
         # moe_start = time.time()
@@ -873,7 +873,7 @@ class MixtralDecoderLayer(nn.Module):
         # torch.cuda.nvtx.range_pop()
         # torch.cuda.synchronize()
         # moe_end = time.time() - moe_start
-        print('moe layer time:', moe_end)
+        # print('moe layer time:', moe_end)
         if output_attentions:
             outputs += (self_attn_weights,)
 
