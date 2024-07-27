@@ -34,7 +34,7 @@ import warnings
 from collections.abc import Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
-
+import torch.nn.functional as F
 
 # Integrations must be imported before ML frameworks:
 # isort: off
@@ -151,11 +151,11 @@ from .utils import (
 )
 from .utils.quantization_config import QuantizationMethod
 
-
+BATCH_SIZE = 20
+SEQ_LEN = 512
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
 DEFAULT_PROGRESS_CALLBACK = ProgressCallback
-BATCH_SIZE = 10
-SEQ_LEN = 128
+
 if is_in_notebook():
     from .utils.notebook import NotebookProgressCallback
 
@@ -228,7 +228,6 @@ OPTIMIZER_NAME_BIN = "optimizer.bin"
 SCHEDULER_NAME = "scheduler.pt"
 SCALER_NAME = "scaler.pt"
 FSDP_MODEL_NAME = "pytorch_model_fsdp"
-
 
 class Trainer:
     """
@@ -586,6 +585,7 @@ class Trainer:
             self.label_smoother = LabelSmoother(epsilon=self.args.label_smoothing_factor)
         else:
             self.label_smoother = None
+
 
         self.state = TrainerState(
             is_local_process_zero=self.is_local_process_zero(),
@@ -1228,7 +1228,7 @@ class Trainer:
         self.save_model(output_dir, _internal_call=True)
         if self.args.should_save:
             self.state.save_to_json(os.path.join(output_dir, TRAINER_STATE_NAME))
-            torch.save(self.optimizer.state_dict(), os.path.join(output_dir, OPTIMIZER_NAME))
+            # torch.save(self.optimizer.state_dict(), os.path.join(output_dir, OPTIMIZER_NAME))
             torch.save(self.lr_scheduler.state_dict(), os.path.join(output_dir, SCHEDULER_NAME))
 
     def call_model_init(self, trial=None):
@@ -1852,25 +1852,36 @@ class Trainer:
 
                 if step % args.gradient_accumulation_steps == 0:
                     self.control = self.callback_handler.on_step_begin(args, self.state, self.control)
-                # input_ids_tensor = torch.randint(0, 28000, (BATCH_SIZE, SEQ_LEN), dtype=torch.long).to('cuda')
-                # attention_mask_tensor = torch.randint(0, 2, (BATCH_SIZE, SEQ_LEN)).to('cuda')
-                # labels_tensor = torch.randint(0, 28000, (BATCH_SIZE, SEQ_LEN), dtype=torch.long).to('cuda')
-                # input = {
+                train_step_start = time.time()
+                
+                # inputs = {
+                #     'input_ids': [random.choices(range(50000), k=1024)],
+                #     'attention_mask': [[random.randint(0, 1) for _ in range(1024)]],
+                #     'labels': [random.choices(range(-100, 100), k=1024)]
+                # }
+                # inputs['input_ids'] = torch.tensor(inputs['input_ids'], dtype=torch.long)
+                # inputs['attention_mask'] = torch.tensor(inputs['attention_mask'], dtype=torch.long)
+                # inputs['labels'] = torch.tensor(inputs['labels'], dtype=torch.long)
+                # torch.manual_seed(42)
+                # torch.cuda.manual_seed_all(42)
+                # input_ids_tensor = torch.randint(0, 50000, (BATCH_SIZE, SEQ_LEN), dtype=torch.long).to('cuda')
+                # attention_mask_tensor = torch.randint(0, 2, (BATCH_SIZE, SEQ_LEN), dtype=torch.long).to('cuda')
+                # labels_tensor = torch.randint(0, 100, (BATCH_SIZE, SEQ_LEN), dtype=torch.long).to('cuda')
+                # inputs = {
                 #     'input_ids': input_ids_tensor,
                 #     'attention_mask': attention_mask_tensor,
                 #     'labels': labels_tensor
                 # }
-                # print(f'input: {input}')
-                # print("Type of input_ids_tensor:", input['input_ids'].dtype)
-                # print("size of input_ids_tensor:", (input['input_ids'].size()))
                 # print(f'input: {inputs}')
                 # print("Type of input_ids_tensor:", inputs['input_ids'].dtype)
                 # print("size of input_ids_tensor:", (inputs['input_ids'].size()))
-                train_step_start = time.time()
-                torch.cuda.nvtx.range_push("Train step")
+                # print(inputs['input_ids'])
+                # aha = self.tokenizer.batch_decode(inputs['input_ids'], skip_special_tokens=False)
+                # print(f'inputs,{aha}')
+                ts = torch.cuda.nvtx.range_start("Train step")
                 with self.accelerator.accumulate(model):
                     tr_loss_step = self.training_step(model, inputs)
-                torch.cuda.nvtx.range_pop()
+                torch.cuda.nvtx.range_end(ts)
                 torch.cuda.synchronize()
                 train_step_end = time.time() - train_step_start
                 print('train step time:', train_step_end)
@@ -1884,7 +1895,7 @@ class Trainer:
                 else:
                     tr_loss += tr_loss_step
 
-                self.current_flos += float(self.floating_point_ops(input))
+                self.current_flos += float(self.floating_point_ops(inputs))
 
                 is_last_step_and_steps_less_than_grad_acc = (
                     steps_in_epoch <= args.gradient_accumulation_steps and (step + 1) == steps_in_epoch
@@ -2767,14 +2778,14 @@ class Trainer:
         if self.args.n_gpu > 1:
             loss = loss.mean()  # mean() to average on multi-gpu parallel training
         backward_start = time.time()
-        torch.cuda.nvtx.range_push("Backward")
+        edg = torch.cuda.nvtx.range_start("Backward")
 
         if self.use_apex:
             with amp.scale_loss(loss, self.optimizer) as scaled_loss:
                 scaled_loss.backward()
         else:
             self.accelerator.backward(loss)
-        torch.cuda.nvtx.range_pop()
+        torch.cuda.nvtx.range_end(edg)
         torch.cuda.synchronize()
         backward_end = time.time() - backward_start
         print('backward time:', backward_end)
@@ -2945,7 +2956,9 @@ class Trainer:
             else:
                 logger.info("Trainer.model is not a `PreTrainedModel`, only saving its state dict.")
                 if self.args.save_safetensors:
-                    safetensors.torch.save_file(state_dict, os.path.join(output_dir, SAFE_WEIGHTS_NAME))
+                    # safetensors.torch.save_file(state_dict, os.path.join(output_dir, SAFE_WEIGHTS_NAME))
+                    torch.save(state_dict, os.path.join(output_dir, WEIGHTS_NAME))
+                    
                 else:
                     torch.save(state_dict, os.path.join(output_dir, WEIGHTS_NAME))
         else:
