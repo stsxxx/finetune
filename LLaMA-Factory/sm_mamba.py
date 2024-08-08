@@ -19,7 +19,7 @@ def read_log_file(file_path):
             name.append(line)
         if "Duration" in line:
             duration = float(line.split()[2])
-            unit = line.split()[2]
+            unit = line.split()[1]
             # print("Durations:", duration)
             if unit == 'msecond':
                 durations.append(duration * 1000)
