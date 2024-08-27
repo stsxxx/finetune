@@ -197,7 +197,7 @@ fig.text(0.4, -0.06, "GPU DRAM capacity", fontsize=25, rotation=0)
 
 fig = matplotlib.pyplot.gcf()
 fig.set_size_inches(15, 4., forward=True)
-fig.savefig('./analytical_capacity/sweep_per.png',bbox_inches='tight')
-fig.savefig('./analytical_capacity/sweep_per.pdf',bbox_inches='tight')
+fig.savefig('./analytical_capacity/max_batch_size.png',bbox_inches='tight')
+fig.savefig('./analytical_capacity/max_batch_size.pdf',bbox_inches='tight')
 
 

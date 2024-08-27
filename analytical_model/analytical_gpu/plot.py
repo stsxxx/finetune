@@ -148,7 +148,7 @@ fig.text(0.45, -0.12, "Batch size", fontsize=25, rotation=0)
 
 fig = matplotlib.pyplot.gcf()
 fig.set_size_inches(15, 3., forward=True)
-fig.savefig('./analytical_gpu/sweep_per.png',bbox_inches='tight')
-fig.savefig('./analytical_gpu/sweep_per.pdf',bbox_inches='tight')
+fig.savefig('./analytical_gpu/throughput_gpus.png',bbox_inches='tight')
+fig.savefig('./analytical_gpu/throughput_gpus.pdf',bbox_inches='tight')
 
 

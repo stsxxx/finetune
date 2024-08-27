@@ -183,7 +183,7 @@ plt.text(-3.3, -3, "Batch size", fontsize=25, rotation=0)
 
 fig = matplotlib.pyplot.gcf()
 fig.set_size_inches(15, 7., forward=True)
-fig.savefig('./analytical_throughput/sweep_per.png',bbox_inches='tight')
-fig.savefig('./analytical_throughput/sweep_per.pdf',bbox_inches='tight')
+fig.savefig('./analytical_throughput/throughput.png',bbox_inches='tight')
+fig.savefig('./analytical_throughput/throughput.pdf',bbox_inches='tight')
 
 
