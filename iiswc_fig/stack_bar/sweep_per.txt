@@ -1,5 +1,0 @@
-Dense(bsz=1)	1.1	1.85	0.05
-Dense(bsz=10)	2.39	4.51	0.05
-Sparse(bsz=1)	1.04	1.78	0.05
-Sparse(bsz=10)	1.36	2.51	0.05
-Sparse(bsz=32)	2.34	4.51	0.05
