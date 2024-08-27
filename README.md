@@ -104,6 +104,17 @@ python3 sm_mamba_back.py ./profile_data/blackmamba/ncu_back > mamba_sm_backward.
 python3 mem_mamba_back.py ./profile_data/blackmamba/ncu_back > mamba_mem_backward.txt
 ```
 
+## Analytical model
+
+You can reproduce the results for Figure 13, 14 and 15 in the paper by running:
+```bash
+cd ../analytical_model
+python3 ./analytical_capacity/plot.py
+python3 ./analytical_throughput/plot.py
+python3 ./analytical_gpu/plot.py
+```
+You will find each figure in analytical_capacity, analytical_throughput and analytical_gpu directories.
+
 ## Citation
 
 If this work is helpful, please kindly cite as:
