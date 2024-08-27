@@ -108,7 +108,7 @@ python3 mem_mamba_back.py ./profile_data/blackmamba/ncu_back > mamba_mem_backwar
 
 You can reproduce the results for Figure 13, 14 and 15 in the paper by running:
 ```bash
-cd ../analytical_model
+cd analytical_model
 python3 ./analytical_capacity/plot.py
 python3 ./analytical_throughput/plot.py
 python3 ./analytical_gpu/plot.py
